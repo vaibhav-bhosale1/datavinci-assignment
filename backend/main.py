@@ -6,20 +6,17 @@ from sqlalchemy.orm import sessionmaker, Session
 import os
 from dotenv import load_dotenv
 
-# 1. Load environment variables (Get the Database URL)
+# 1. Load environment variables
 load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 # 2. Database Setup
-# We use SQLAlchemy to connect to the PostgreSQL database
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-# 3. Define the Campaign Model (Must match your SQL Table)
 class Campaign(Base):
     __tablename__ = "campaigns"
-    
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
     status = Column(String)
@@ -27,20 +24,25 @@ class Campaign(Base):
     cost = Column(DECIMAL(10, 2))
     impressions = Column(Integer)
 
-# 4. Initialize FastAPI App
+# 3. Initialize FastAPI App
 app = FastAPI()
 
-# 5. Enable CORS (Cross-Origin Resource Sharing)
-# This allows your Frontend (running on port 3000) to talk to this Backend (running on port 8000)
+# --- THE FIX IS HERE ---
+# We explicitly list the origins we want to allow.
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins (Change this to specific domain in production)
+    allow_origins=origins,     # Use the explicit list
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# -----------------------
 
-# Dependency to get the database session
 def get_db():
     db = SessionLocal()
     try:
@@ -48,16 +50,10 @@ def get_db():
     finally:
         db.close()
 
-# [cite_start]6. Create the API Endpoint [cite: 16]
 @app.get("/campaigns")
 def read_campaigns(db: Session = Depends(get_db)):
-    """
-    Fetches all campaigns from the database.
-    """
-    campaigns = db.query(Campaign).all()
-    return campaigns
+    return db.query(Campaign).all()
 
-# 7. Root endpoint to check if API is running
 @app.get("/")
 def read_root():
     return {"message": "Grippi Campaign API is running!"}
