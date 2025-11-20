@@ -6,11 +6,9 @@ from sqlalchemy.orm import sessionmaker, Session
 import os
 from dotenv import load_dotenv
 
-# 1. Load environment variables
 load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# 2. Database Setup
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
@@ -24,11 +22,8 @@ class Campaign(Base):
     cost = Column(DECIMAL(10, 2))
     impressions = Column(Integer)
 
-# 3. Initialize FastAPI App
 app = FastAPI()
 
-# --- THE FIX IS HERE ---
-# We explicitly list the origins we want to allow.
 origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
@@ -36,12 +31,11 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,     # Use the explicit list
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-# -----------------------
 
 def get_db():
     db = SessionLocal()
