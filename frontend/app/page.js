@@ -11,7 +11,7 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+        const apiUrl = "https://datavinci-assignment.onrender.com"
         const response = await axios.get(`${apiUrl}/campaigns`);
         setCampaigns(response.data);
         setLoading(false);
